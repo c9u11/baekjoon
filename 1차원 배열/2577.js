@@ -14,9 +14,12 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  const count = [];
-  for (let i = 0; i < input.length; i++) {
-    count[input[i] % 42] = true;
+  const num = +input[0] * +input[1] * +input[2] + "";
+  const count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  let output = "";
+  for (let i = 0; i < num.length; i++) {
+    count[+num[i]]++;
   }
-  console.log(count.length);
+  count.forEach((v) => (output += v + "\n"));
+  console.log(output);
 }
