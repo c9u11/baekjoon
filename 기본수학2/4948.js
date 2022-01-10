@@ -15,23 +15,18 @@ r.on("line", function (line) {
 
 function main(input) {
   const numArray = input.map((v) => +v);
-  numArray.splice(0, 1);
   const maxNum = Math.max(...numArray);
   const cntArray = new Array(numArray.length - 1).fill(0);
-  const tempArray = new Array(maxNum + 1).fill(true).fill(false, 0, 2);
-  for (let i = 2; i <= maxNum; i++) {
+  const tempArray = new Array(maxNum * 2 + 1).fill(true).fill(false, 0, 2);
+  for (let i = 2; i <= maxNum * 2; i++) {
     if (!tempArray[i]) continue;
-    for (let temp = 2; temp * i <= maxNum; temp++) {
+    for (let temp = 2; temp * i <= maxNum * 2; temp++) {
       if (tempArray[temp * i]) tempArray[temp * i] = false;
     }
-  }
-  numArray.forEach((v) => {
-    let output = "";
-    for (let i = 2; i <= v / 2; i++) {
-      if (tempArray[i] && tempArray[v - i]) {
-        output = `${i} ${v - i}`;
-      }
+    // console.log(i);
+    for (let j = 0; j < numArray.length - 1; j++) {
+      if (numArray[j] < i && i <= numArray[j] * 2) cntArray[j]++;
     }
-    console.log(output);
-  });
+  }
+  console.log(cntArray.join("\n"));
 }
