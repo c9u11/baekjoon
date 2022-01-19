@@ -14,9 +14,12 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  let num = 1;
-  for (i = 1; i <= +input[0]; i++) {
-    num *= i;
+  console.log(factorial(+input[0]));
+}
+
+function factorial(n) {
+  if (!n) return 1;
+  else {
+    return n * factorial(n - 1);
   }
-  console.log(num);
 }
