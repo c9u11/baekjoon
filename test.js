@@ -15,44 +15,43 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  const [N, M, B] = input.shift().split(" ").map(Number);
-  const result = [Infinity];
-  let min = +Infinity,
-    max = -Infinity;
-  for (let i = 0; i < N; i++) {
-    input[i] = input[i].split(" ").map(Number);
-    for (let j = 0; j < M; j++) {
-      min = Math.min(min, input[i][j]);
-      max = Math.max(max, input[i][j]);
-    }
-  }
+  const N = +input.shift();
+  const numMap = input.map((v) => v.split(" ").map(Number));
+  const check = new Array(N).fill(false);
+  let result = Infinity;
+  dfs(0, 0);
+  console.log(result);
+  function dfs(cnt, idx) {
+    if (cnt === N / 2) {
+      const linkTeam = [];
+      const startTeam = [];
+      let linkPower = 0,
+        startPower = 0;
 
-  for (let floor = min; floor <= max; floor++) {
-    const cnt = setFloor(floor);
-    if (result[0] >= cnt) {
-      result[0] = cnt;
-      result[1] = floor;
-    }
-  }
+      check.forEach((v, i) => {
+        if (v) linkTeam.push(i);
+        else startTeam.push(i);
+      });
 
-  console.log(result.join(" "));
-
-  function setFloor(floor) {
-    let cnt = 0;
-    let block = B;
-    for (let i = 0; i < N; i++) {
-      for (let j = 0; j < M; j++) {
-        const currentFloor = input[i][j];
-        if (currentFloor > floor) {
-          cnt += (currentFloor - floor) * 2;
-          block += currentFloor - floor;
-        } else if (currentFloor < floor) {
-          cnt += floor - currentFloor;
-          block -= floor - currentFloor;
+      for (let i = 0; i < N / 2; i++) {
+        for (let j = i + 1; j < N / 2; j++) {
+          linkPower +=
+            numMap[linkTeam[i]][linkTeam[j]] + numMap[linkTeam[j]][linkTeam[i]];
+          startPower +=
+            numMap[startTeam[i]][startTeam[j]] +
+            numMap[startTeam[j]][startTeam[i]];
         }
       }
-    }
 
-    return block >= 0 ? cnt : Infinity;
+      result = Math.min(result, Math.abs(linkPower - startPower));
+
+      return;
+    } else {
+      for (let i = idx; i < N; i++) {
+        check[i] = true;
+        dfs(cnt + 1, i + 1);
+        check[i] = false;
+      }
+    }
   }
 }
