@@ -14,20 +14,45 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  const [N, K] = input[0].split(" ").map(Number);
-  let max = N;
-  let cnt = 0;
-  let goal = K;
+  const [N, M] = input[0].split(" ").map(Number);
+  const connectedMap = new Array(N + 1).fill(true).map((v) => []);
+  let cnt = 0,
+    result = [undefined, undefined];
+  for (let i = 1; i <= M; i++) {
+    const [s, e] = input[i].split(" ").map(Number);
+    connectedMap[s].push(e);
+    connectedMap[e].push(s);
+  }
   for (let i = 1; i <= N; i++) {
-    if (K < +input[i]) {
-      max = i - 1;
-      break;
+    cnt = 0;
+    bfs(i);
+    if (result[0] === undefined || result[0] > cnt) {
+      result[0] = cnt;
+      result[1] = i;
     }
   }
-  for (let i = max; i > 0; i--) {
-    if (goal === 0) break;
-    cnt += Math.floor(goal / +input[i]);
-    goal %= +input[i];
+  console.log(result[1]);
+  function bfs(start) {
+    visited = new Array(N + 1).fill(false);
+    visited[start] = true;
+    let queue = new Set();
+    let tempQueue = new Set();
+    connectedMap[start].forEach((v) => {
+      queue.add(v);
+    });
+    let deps = 0;
+    while (queue.size) {
+      deps++;
+      queue.forEach((v) => {
+        if (visited[v]) return;
+        visited[v] = true;
+        cnt += deps;
+        for (let val of connectedMap[v]) {
+          tempQueue.add(val);
+        }
+      });
+      queue = tempQueue;
+      tempQueue = new Set();
+    }
   }
-  console.log(cnt);
 }
