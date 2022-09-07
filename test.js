@@ -14,24 +14,38 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  const N = +input[0];
-  const connectedMap = new Array(N + 1).fill().map(() => new Array());
-  const visited = new Array(N + 1);
-  let [queue, tempQueue] = [[{ parent: "-1", current: "1" }], []];
-  for (let i = 1; i < N; i++) {
-    const [s, e] = input[i].split(" ");
-    connectedMap[s].push(e);
-    connectedMap[e].push(s);
-  }
-  while (queue.length) {
-    for (let { parent, current } of queue) {
-      if (visited[current]) continue;
-      visited[current] = parent;
-      tempQueue.push(
-        ...connectedMap[current].map((v) => ({ parent: current, current: v }))
-      );
+  const tree = [0, +input[0]];
+  const prev = { index: 1, value: +input[0] };
+  for (let i = 1; i < input.length; i++) {
+    const val = +input[i];
+    if (prev.value < val) {
     }
-    [queue, tempQueue] = [tempQueue, []];
+    if (prev.value > val) {
+      prev.index = prev.index * 2;
+      prev.value = val;
+    } else {
+      let parent = 1;
+      while (tree[parent]) {
+        if (val > tree[parent]) parent = parent * 2 + 1;
+        else parent *= 2;
+      }
+      prev.index = parent;
+      prev.value = val;
+    }
+    tree[prev.index] = prev.value;
   }
-  console.log(visited.filter((v) => v !== "-1" && v).join("\n"));
+  console.log(postorder());
+  function postorder(idx = 1) {
+    let visited = "";
+    let tempIdx = idx;
+    while (tree[tempIdx * 2]) {
+      tempIdx *= 2;
+    }
+    while (tempIdx >= idx) {
+      if (tree[tempIdx * 2 + 1]) visited += postorder(tempIdx * 2 + 1);
+      visited += `${tree[tempIdx]}\n`;
+      tempIdx /= 2;
+    }
+    return visited;
+  }
 }
