@@ -12,30 +12,158 @@ r.on("line", function (line) {
   main(input);
   process.exit();
 });
+class MinHeap {
+  constructor() {
+    this.heap = [null];
+  }
 
-function main(input) {
-  for (let tc = 0; tc < +input[0]; tc++) {
-    const N = input[tc * 3 + 1];
-    const sticker = [
-      input[tc * 3 + 2].split(" ").map(Number),
-      input[tc * 3 + 3].split(" ").map(Number),
-    ];
-    const dp = [[], []];
-    let max = -Infinity;
-    for (let i = 0; i < N; i++) {
-      dp[0][i] = sticker[0][i];
-      if (i === 1) dp[0][i] += dp[1][i - 1];
-      else if (i > 1)
-        dp[0][i] += Math.max(dp[1][i - 1], dp[0][i - 2], dp[1][i - 2]);
+  getLen() {
+    return this.heap.length - 1;
+  }
 
-      dp[1][i] = sticker[1][i];
-      if (i === 1) dp[1][i] += dp[0][i - 1];
-      else if (i > 1)
-        dp[1][i] += Math.max(dp[0][i - 1], dp[0][i - 2], dp[1][i - 2]);
+  insert(val) {
+    this.heap.push(val);
+    let curIdx = this.heap.length - 1;
+    let parIdx = Math.floor(curIdx / 2);
 
-      max = Math.max(max, dp[0][i], dp[1][i]);
+    while (curIdx > 1 && this.heap[curIdx] < this.heap[parIdx]) {
+      [this.heap[curIdx], this.heap[parIdx]] = [
+        this.heap[parIdx],
+        this.heap[curIdx],
+      ];
+      [curIdx, parIdx] = [parIdx, Math.floor(parIdx / 2)];
+    }
+  }
+
+  pop() {
+    const min = this.heap[1];
+    if (this.heap.length <= 2) this.heap = [null];
+    else this.heap[1] = this.heap.pop();
+
+    let curIdx = 1;
+    let leftIdx = curIdx * 2;
+    let rightIdx = curIdx * 2 + 1;
+    if (!this.heap[leftIdx]) return min;
+    if (!this.heap[rightIdx]) {
+      if (this.heap[leftIdx] < this.heap[curIdx])
+        [this.heap[leftIdx], this.heap[curIdx]] = [
+          this.heap[curIdx],
+          this.heap[leftIdx],
+        ];
+      return min;
     }
 
-    console.log(max);
+    while (
+      this.heap[leftIdx] < this.heap[curIdx] ||
+      this.heap[rightIdx] < this.heap[curIdx]
+    ) {
+      const minIdx =
+        this.heap[leftIdx] > this.heap[rightIdx] ? rightIdx : leftIdx;
+      [this.heap[minIdx], this.heap[curIdx]] = [
+        this.heap[curIdx],
+        this.heap[minIdx],
+      ];
+      curIdx = minIdx;
+      leftIdx = curIdx * 2;
+      rightIdx = curIdx * 2 + 1;
+    }
+    return min;
   }
+}
+class MaxHeap {
+  constructor() {
+    this.heap = [null];
+  }
+
+  getLen() {
+    return this.heap.length - 1;
+  }
+
+  insert(val) {
+    this.heap.push(val);
+    let curIdx = this.heap.length - 1;
+    let parIdx = Math.floor(curIdx / 2);
+
+    while (curIdx > 1 && this.heap[curIdx] > this.heap[parIdx]) {
+      [this.heap[curIdx], this.heap[parIdx]] = [
+        this.heap[parIdx],
+        this.heap[curIdx],
+      ];
+      [curIdx, parIdx] = [parIdx, Math.floor(parIdx / 2)];
+    }
+  }
+
+  pop() {
+    const max = this.heap[1];
+    if (this.heap.length <= 2) this.heap = [null];
+    else this.heap[1] = this.heap.pop();
+
+    let curIdx = 1;
+    let leftIdx = curIdx * 2;
+    let rightIdx = curIdx * 2 + 1;
+    if (!this.heap[leftIdx]) return max;
+    if (!this.heap[rightIdx]) {
+      if (this.heap[leftIdx] > this.heap[curIdx])
+        [this.heap[leftIdx], this.heap[curIdx]] = [
+          this.heap[curIdx],
+          this.heap[leftIdx],
+        ];
+      return max;
+    }
+
+    while (
+      this.heap[leftIdx] > this.heap[curIdx] ||
+      this.heap[rightIdx] > this.heap[curIdx]
+    ) {
+      const maxIdx =
+        this.heap[leftIdx] < this.heap[rightIdx] ? rightIdx : leftIdx;
+      [this.heap[maxIdx], this.heap[curIdx]] = [
+        this.heap[curIdx],
+        this.heap[maxIdx],
+      ];
+      curIdx = maxIdx;
+      leftIdx = curIdx * 2;
+      rightIdx = curIdx * 2 + 1;
+    }
+    return max;
+  }
+}
+class MidHeap {
+  constructor() {
+    this.minHeap = new MinHeap();
+    this.maxHeap = new MaxHeap();
+  }
+
+  getMid() {
+    if (this.minHeap.getLen() > this.maxHeap.getLen())
+      return this.minHeap.heap[1];
+    else return this.maxHeap.heap[1];
+  }
+
+  insert(val) {
+    const mid = this.getMid();
+    if (mid === undefined) this.maxHeap.insert(val);
+    else {
+      if (mid < val) {
+        if (this.minHeap.getLen() - this.maxHeap.getLen() > 0)
+          this.maxHeap.insert(this.minHeap.pop());
+        this.minHeap.insert(val);
+      } else {
+        if (this.maxHeap.getLen() - this.minHeap.getLen() > 0)
+          this.minHeap.insert(this.maxHeap.pop());
+        this.maxHeap.insert(val);
+      }
+    }
+  }
+}
+
+function main(input) {
+  const N = +input[0];
+  const midHeap = new MidHeap();
+  const result = [];
+  for (let i = 1; i <= N; i++) {
+    midHeap.insert(+input[i]);
+    result.push(midHeap.getMid());
+  }
+  console.log(result.join("\n"));
 }
