@@ -14,21 +14,43 @@ r.on("line", function (line) {
 });
 
 function main(input) {
-  const [N, K] = input[0].split(" ").map(Number);
-  const visited = new Array(100001);
-  let [queue, tempQueue] = [[{ time: 0, position: N }], []];
-  while (visited[K] === undefined) {
-    for ({ time, position } of queue) {
-      if (visited[position] < time) continue;
-      visited[position] = time;
-      if (position <= 50000)
-        tempQueue.push({ time: time, position: position * 2 });
-      if (position < 100000)
-        tempQueue.push({ time: time + 1, position: position + 1 });
-      if (position > 0)
-        tempQueue.push({ time: time + 1, position: position - 1 });
-    }
-    [queue, tempQueue] = [tempQueue, []];
+  const N = +input[0];
+  const inOrderIdx = {};
+  input[1].split(" ").forEach((v, i) => {
+    inOrderIdx[v] = i;
+    return v;
+  });
+  const postOrder = {};
+  input[2].split(" ").forEach((v, i) => {
+    postOrder[i] = v;
+    return v;
+  });
+  let result = "";
+  const queue = [{ start: 0, end: N - 1 }];
+  while (queue.length) {
+    const { start, end } = queue.pop();
+    if (start < 0 || end < 0 || start >= N || end >= N || start > end) continue;
+    const root = postOrder[end];
+    result += root + " ";
+    if (start === end) continue;
+
+    const inOrderRootIdx = inOrderIdx[root];
+    const inOrderLeftStartIdx = inOrderIdx[postOrder[start]];
+
+    // right
+    queue.push({
+      start:
+        inOrderLeftStartIdx < inOrderRootIdx
+          ? start + inOrderRootIdx - inOrderLeftStartIdx
+          : start,
+      end: end - 1,
+    });
+
+    // left
+    queue.push({
+      start: start,
+      end: start + inOrderRootIdx - inOrderLeftStartIdx - 1,
+    });
   }
-  console.log(visited[K]);
+  console.log(result);
 }
